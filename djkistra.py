@@ -1,134 +1,146 @@
 import heapq
+"""La libreria heapq in Python fornisce una coda di priorità basata su un min-heap, 
+che è una struttura dati dove il valore minimo sta in cima.
+Le operazioni principali di heapq sono:
+heappush(heap, item) → Inserisce un elemento nella heap in O(log n)
+heappop(heap) → Estrae l'elemento minimo in O(log n)
+heapify(iterable) → Trasforma una lista in una heap in O(n)
+"""
 import networkx as nx
+"""La libreria networkx ci servià per implementare la visualizzazione
+grafica del grafo, in particolare per disegnare i nodi e gli archi del grafo."""
 import matplotlib.pyplot as plt
+"""La libreria matplotlib.pyplot ci servirà per visualizzare il grafo."""
+import json
+"""La libreria json ci servirà per caricare la topologia della rete da un file JSON."""
+from collections import defaultdict
+"""La libreria collections ci servirà per creare un dizionario con valori di default."""
+
+
+# Implementa l'algoritmo di Dijkstra per trovare il percorso più breve da un nodo sorgente a tutti gli altri nodi della rete
 
 def dijkstra(graph, start):
-    """
-    Implementazione dell'algoritmo di Dijkstra per trovare il percorso più breve in una rete di router.
-    
-    Parametri:
-    - graph: Dizionario che rappresenta il grafo della rete (router connessi e relativi pesi)
-    - start: Nodo di partenza (router sorgente)
-    
-    Restituisce:
-    - distances: Dizionario con le distanze minime dai router
-    - previous_nodes: Dizionario per ricostruire il percorso minimo
-    """
+    # Creiamo una coda con priorità (min-heap) per gestire i nodi da esplorare
     priority_queue = []
-    heapq.heappush(priority_queue, (0, start))
+    heapq.heappush(priority_queue, (0, start))  # Inseriamo il nodo iniziale con distanza 0
     
-    # Inizializza le distanze con infinito e il nodo di partenza con 0
+    # Dizionario per memorizzare le distanze minime da start a ogni altro nodo, inizializzate a infinito
     distances = {router: float('inf') for router in graph}
-    distances[start] = 0
+    distances[start] = 0  # La distanza del nodo di partenza è zero
     
-    # Dizionario per tracciare il percorso
+    # Dizionario per memorizzare il predecessore di ciascun nodo nel percorso più breve
     previous_nodes = {router: None for router in graph}
     
     while priority_queue:
+        # Estrai il nodo con la distanza minore dalla coda con priorità (heap min-heap)
         current_distance, current_router = heapq.heappop(priority_queue)
         
-        # Se troviamo una distanza maggiore, ignoriamo il nodo
-        if current_distance > distances[current_router]:
-            continue
-        
-        # Esaminiamo i vicini del nodo corrente
+        # Esplora i vicini del nodo corrente
         for neighbor, weight in graph[current_router].items():
-            distance = current_distance + weight
+            distance = current_distance + weight  # Calcola la nuova distanza provvisoria
             
-            # Se il nuovo percorso è più breve, aggiorniamo la distanza e il percorso
+            # Se il nuovo percorso è più breve, aggiorna la distanza e il predecessore
             if distance < distances[neighbor]:
                 distances[neighbor] = distance
                 previous_nodes[neighbor] = current_router
-                heapq.heappush(priority_queue, (distance, neighbor))
+                heapq.heappush(priority_queue, (distance, neighbor))  # Aggiunge il nodo con priorità aggiornata
     
     return distances, previous_nodes
 
+# Ricostruisce il percorso più breve tra due nodi utilizzando le informazioni sui nodi precedenti
+
 def shortest_path(previous_nodes, start, end):
-    """
-    Ricostruisce il percorso più breve dal nodo di partenza `start` al nodo di destinazione `end`.
-    
-    Parametri:
-    - previous_nodes: Dizionario con i predecessori per ogni nodo
-    - start: Nodo di partenza
-    - end: Nodo di destinazione
-    
-    Restituisce:
-    - Lista con i nodi che compongono il percorso minimo
-    """
     path = []
     current = end
     
+    # Si parte dal nodo di destinazione e si risale fino al nodo di partenza
     while current is not None:
-        path.insert(0, current)
+        path.insert(0, current)  # Inserisce il nodo all'inizio della lista per mantenere l'ordine corretto
         current = previous_nodes[current]
     
-    # Se il percorso non parte dal nodo di start, significa che non è raggiungibile
+    """ Verifica che il percorso sia valido (ovvero che inizi dal nodo di partenza) importante 
+    perchè se il nodo di destinazione non è raggiungibile da start, il percorso sarà vuoto!! """
+
     return path if path[0] == start else []
 
-def simulate_failure(graph, failed_router):
-    """
-    Simula un guasto rimuovendo un router dalla rete.
-    
-    Parametri:
-    - graph: Dizionario che rappresenta la rete
-    - failed_router: Router da rimuovere
-    """
-    if failed_router in graph:
-        del graph[failed_router]
-        for router in graph:
-            graph[router].pop(failed_router, None)
+# Funzione per la simulazione di guasti di un router, da utilizzare facoltativamente
 
-def draw_network(graph, path=[]):
-    """
-    Disegna la rete di router con il percorso più breve evidenziato in rosso.
+def simulate_failure(graph, failed_router):
+    if failed_router in graph:
+        del graph[failed_router]  # Serve a simulare il guasto di un router, se lo implmentiamo
+        for router in graph:
+            graph[router].pop(failed_router, None)  # Rimuove eventuali riferimenti al router guasto dalla topologia.
     
-    Parametri:
-    - graph: Dizionario che rappresenta la rete
-    - path: Lista dei nodi che compongono il percorso più breve
-    """
+
+# Visualizza la rete e il percorso più breve utilizzando networkx e matplotlib
+def draw_network(graph, path=[]):
     G = nx.Graph()
     for node in graph:
         for neighbor, weight in graph[node].items():
             G.add_edge(node, neighbor, weight=weight)
     
-    pos = nx.spring_layout(G)  # Layout per il posizionamento dei nodi
+    # Posizionamento automatico dei nodi
+    pos = nx.spring_layout(G) 
     edge_labels = {(u, v): d['weight'] for u, v, d in G.edges(data=True)}
     
+    # Disegna la rete con i nodi e gli archi
     plt.figure(figsize=(8, 6))
     nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=2000, font_size=10)
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
     
+    # Evidenzia il percorso più breve trovato
     if path:
         path_edges = list(zip(path, path[1:]))
         nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='red', width=2)
     
     plt.show()
 
+# Carica la topologia della rete da un file JSON
+
+def load_network_from_json(file_path):
+    with open(file_path, 'r') as f:
+        return json.load(f)
+
+# Funzione principale che avvia l'algoritmo, gestisce la simulazione di guasti e visualizza i risultati
+
 def main():
-    """
-    Funzione principale per simulare la rete di router e calcolare i percorsi più brevi.
-    """
-    # Definizione della rete di router con i pesi (costi)
-    network = {
-        'R1': {'R2': 10, 'R3': 3},
-        'R2': {'R1': 10, 'R3': 1, 'R4': 2},
-        'R3': {'R1': 3, 'R2': 1, 'R4': 8, 'R5': 2},
-        'R4': {'R2': 2, 'R3': 8, 'R5': 4},
-        'R5': {'R3': 2, 'R4': 4}
-    }
+    start = 'R1'  # Nodo di partenza per l'algoritmo di Dijkstra
+    #failure = 'R2'  # Simula il guasto del router R2
+    
+    # Carica la rete da un file JSON, se disponibile, altrimenti prosegui con quello di default, usato nei test.
+    try:
+        network = load_network_from_json('network.json')
+    except FileNotFoundError:
+        print("File di rete non trovato. Usando la rete di default.")
+        network = {
+            'R1': {'R2': 10, 'R3': 3},
+            'R2': {'R1': 10, 'R3': 1, 'R4': 2},
+            'R3': {'R1': 3, 'R2': 1, 'R4': 8, 'R5': 2},
+            'R4': {'R2': 2, 'R3': 8, 'R5': 4},
+            'R5': {'R3': 2, 'R4': 4}
+        }
+    
+    # Simula il guasto del router specificato
+    #simulate_failure(network, failure)
+    
+    # Se il router guasto è il nodo di partenza, l'algoritmo non può essere eseguito
+    #if failure == start:
+    #    print(f"!!!!! {failure} ha un guasto, impossibile avviare Dijkstra.")
+    #    return   
+    
+    # Esegue l'algoritmo di Dijkstra per trovare i percorsi più brevi
+    distances, previous_nodes = dijkstra(network, start)
+    
+    # Stampa i percorsi più brevi e li visualizza
+    for target in network:
+        if target != start:
+            if distances[target] == float('inf'):
+                print(f"Il router {target} non è raggiungibile da {start}.")
+            else:
+                path = shortest_path(previous_nodes, start, target)
+                print(f"Percorso più breve da {start} a {target}: {path} con costo {distances[target]}")
+                draw_network(network, path)
 
-    # Simulazione di un guasto (decommentare per attivarlo)
-    # simulate_failure(network, 'R3')
-
-    # Calcolo dei percorsi minimi dal router R1 verso tutti gli altri
-    distances, previous_nodes = dijkstra(network, 'R1')
-
-    # Mostrare i percorsi minimi verso i router target
-    target_routers = ['R2', 'R3', 'R4', 'R5']
-    for target in target_routers:
-        path = shortest_path(previous_nodes, 'R1', target)
-        print(f'Percorso più breve da R1 a {target}: {path} con costo {distances[target]}')
-        draw_network(network, path)
-
+# Avvia il programma
 if __name__ == "__main__":
     main()
