@@ -63,7 +63,7 @@ def shortest_path(previous_nodes, start, end):
 
     return path if path[0] == start else []
 
-# Funzione per la simulazione di guasti di un router, da utilizzare facoltativamente
+# Funzione per la simulazione di guasti di un router, da utilizzare facoltativamente (aggiornata)
 
 def simulate_failure(graph, failed_router):
     if failed_router in graph:
@@ -105,7 +105,6 @@ def load_network_from_json(file_path):
 
 def main():
     start = 'R1'  # Nodo di partenza per l'algoritmo di Dijkstra
-    #failure = 'R2'  # Simula il guasto del router R2
     
     # Carica la rete da un file JSON, se disponibile, altrimenti prosegui con quello di default, usato nei test.
     try:
@@ -120,12 +119,12 @@ def main():
             'R5': {'R3': 2, 'R4': 4}
         }
     
-    # Simula il guasto del router specificato
+    # Simula il guasto del router specificato, da commentare se non è necessario.
+    #failure = 'R2'  # Simula il guasto del router R2
     #simulate_failure(network, failure)
-    
-    # Se il router guasto è il nodo di partenza, l'algoritmo non può essere eseguito
+    #""" Se il router guasto è il nodo di partenza, l'algoritmo non può essere eseguito e termina."""
     #if failure == start:
-    #    print(f"!!!!! {failure} ha un guasto, impossibile avviare Dijkstra.")
+    #    print(f"❌❌❌❌❌❌ {failure} è guasto, il responsabile della rete non ha previsto un failover e verrà licenziato 🚀 .")
     #    return   
     
     # Esegue l'algoritmo di Dijkstra per trovare i percorsi più brevi
