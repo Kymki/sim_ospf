@@ -17,6 +17,7 @@ from collections import defaultdict
 """La libreria collections ci servirà per creare un dizionario con valori di default."""
 
 
+
 # Implementa l'algoritmo di Dijkstra per trovare il percorso più breve da un nodo sorgente a tutti gli altri nodi della rete
 
 def dijkstra(graph, start):
@@ -120,7 +121,7 @@ def main():
         } 
     
     """ Simula il guasto del router specificato, da commentare se non è necessario."""
-    #failure = 'R1'  # Simula il guasto del router
+    #failure = 'R4'  # Simula il guasto del router
     #simulate_failure(network, failure)
     #""" Se il router guasto è il nodo di partenza, l'algoritmo non può essere eseguito e termina."""
     #if failure == start:
