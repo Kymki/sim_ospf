@@ -119,7 +119,7 @@ def main():
             'R5': {'R3': 2, 'R4': 4}
         }
     
-    # Simula il guasto del router specificato, da commentare se non è necessario.
+    #""" Simula il guasto del router specificato, da commentare se non è necessario."""
     #failure = 'R2'  # Simula il guasto del router R2
     #simulate_failure(network, failure)
     #""" Se il router guasto è il nodo di partenza, l'algoritmo non può essere eseguito e termina."""
@@ -127,17 +127,17 @@ def main():
     #    print(f"❌❌❌❌❌❌ {failure} è guasto, il responsabile della rete non ha previsto un failover e verrà licenziato 🚀 .")
     #    return   
     
-    # Esegue l'algoritmo di Dijkstra per trovare i percorsi più brevi
+    # Esegue l'algoritmo di Dijkstra per trovare i percorsi più brevi 
     distances, previous_nodes = dijkstra(network, start)
     
-    # Stampa i percorsi più brevi e li visualizza
+    # Stampa i percorsi più brevi e li visualizza 
     for target in network:
         if target != start:
-            if distances[target] == float('inf'):
+            if distances[target] == float('inf'): # Se la distanza è infinita, il nodo non è raggiungibile
                 print(f"Il router {target} non è raggiungibile da {start}.")
             else:
                 path = shortest_path(previous_nodes, start, target)
-                print(f"Percorso più breve da {start} a {target}: {path} con costo {distances[target]}")
+                print(f"Percorso più breve da {start} a {target}: {path} con costo {distances[target]}") # Stampa il percorso più breve
                 draw_network(network, path)
 
 # Avvia il programma
